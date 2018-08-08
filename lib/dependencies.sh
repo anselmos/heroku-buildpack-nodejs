@@ -5,7 +5,7 @@ measure_size() {
 list_dependencies() {
   local build_dir="$1"
 
-  cd "$build_dir"
+  cd "$build_dir"/$NODEJS_APP_DIR
   if $YARN; then
     echo ""
     (yarn list --depth=0 || true) 2>/dev/null
@@ -89,8 +89,8 @@ yarn_node_modules() {
   local build_dir=${1:-}
   local production=${YARN_PRODUCTION:-false}
 
-  echo "Installing node modules (yarn.lock)"
-  cd "$build_dir"
+  echo "Installing node modules ($NODEJS_APP_DIR/yarn.lock)"
+  cd "$build_dir"/$NODEJS_APP_DIR
   yarn install --production=$production --frozen-lockfile --ignore-engines 2>&1
 }
 
@@ -108,7 +108,7 @@ yarn_prune_devdependencies() {
     return 0
   else 
     local start=$(nowms)
-    cd "$build_dir" 
+    cd "$build_dir"/$NODEJS_APP_DIR
     yarn install --frozen-lockfile --ignore-engines --ignore-scripts --prefer-offline 2>&1
     mtime "prune.yarn.time" "${start}"
   fi
@@ -122,15 +122,15 @@ npm_node_modules() {
     cd $build_dir/$NODEJS_APP_DIR
 
     if [ -e $build_dir/$NODEJS_APP_DIR/package-lock.json ]; then
-      echo "Installing node modules (package.json + package-lock)"
+      echo "Installing node modules ($NODEJS_APP_DIR/package.json + package-lock)"
     elif [ -e $build_dir/npm-shrinkwrap.json ]; then
-      echo "Installing node modules (package.json + shrinkwrap)"
+      echo "Installing node modules ($NODEJS_APP_DIR/package.json + shrinkwrap)"
     else
-      echo "Installing node modules (package.json)"
+      echo "Installing node modules ($NODEJS_APP_DIR/package.json)"
     fi
     npm install --production=$production --unsafe-perm --userconfig $build_dir/.npmrc 2>&1
   else
-    echo "Skipping (no package.json)"
+    echo "Skipping (no $NODEJS_APP_DIR/package.json)"
   fi
 }
 
@@ -143,13 +143,13 @@ npm_rebuild() {
     echo "Rebuilding any native modules"
     npm rebuild 2>&1
     if [ -e $build_dir/npm-shrinkwrap.json ]; then
-      echo "Installing any new modules (package.json + shrinkwrap)"
+      echo "Installing any new modules ($NODEJS_APP_DIR/package.json + shrinkwrap)"
     else
-      echo "Installing any new modules (package.json)"
+      echo "Installing any new modules ($NODEJS_APP_DIR/package.json)"
     fi
     npm install --production=$production --unsafe-perm --userconfig $build_dir/.npmrc 2>&1
   else
-    echo "Skipping (no package.json)"
+    echo "Skipping (no $NODEJS_APP_DIR/package.json)"
   fi
 }
 
@@ -190,7 +190,7 @@ npm_prune_devdependencies() {
     return 0
   else
     local start=$(nowms)
-    cd "$build_dir" 
+    cd "$build_dir"/$NODEJS_APP_DIR
     npm prune --userconfig $build_dir/.npmrc 2>&1
     mtime "prune.npm.time" "${start}"
   fi
