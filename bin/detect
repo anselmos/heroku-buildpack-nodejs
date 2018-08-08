@@ -1,11 +1,4 @@
 #!/usr/bin/env bash
 # bin/detect <build-dir>
 
-NODEJS_APP_DIR="$(cat "$3/NODEJS_APP_DIR")"
-if [ -f $1/$NODEJS_APP_DIR/package.json ]; then
-  echo 'Node.js'
-  exit 0
-fi
-
->&2 echo 'Node.js: package.json not found in application root'
-exit 1
+echo 'Node.js'

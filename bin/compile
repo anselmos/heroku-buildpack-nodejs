@@ -4,7 +4,7 @@
 ### Configure environment
 
 set -o errexit    # always exit on error
-set -o pipefail   # don't ignore exit codes when piping output
+set -o pipefail   # don\'t ignore exit codes when piping output
 unset GIT_DIR     # Avoid GIT_DIR leak from previous build steps
 
 ### Constants
@@ -17,6 +17,7 @@ BPLOG_PREFIX="buildpack.nodejs"
 BUILD_DIR=${1:-}
 CACHE_DIR=${2:-}
 ENV_DIR=${3:-}
+NODEJS_APP_DIR="$(cat "$3/NODEJS_APP_DIR")"
 BP_DIR=$(cd $(dirname ${0:-}); cd ..; pwd)
 STDLIB_FILE=$(mktemp -t stdlib.XXXXX)
 
@@ -65,10 +66,10 @@ trap 'handle_failure' ERR
 
 fail_dot_heroku "$BUILD_DIR"
 fail_dot_heroku_node "$BUILD_DIR"
-fail_invalid_package_json "$BUILD_DIR"
+fail_invalid_package.json "$BUILD_DIR"
 fail_multiple_lockfiles "$BUILD_DIR"
 warn_prebuilt_modules "$BUILD_DIR"
-warn_missing_package_json "$BUILD_DIR"
+warn_missing_package.json "$BUILD_DIR"
 
 ### Compile
 
@@ -91,19 +92,19 @@ list_node_config | output "$LOG_FILE"
 [ ! "$NPM_CONFIG_CACHE" ] && export NPM_CONFIG_CACHE=$(mktemp -d -t npmcache.XXXXX)
 
 install_bins() {
-  local node_engine=$(read_json "$BUILD_DIR/package.json" ".engines.node")
-  local iojs_engine=$(read_json "$BUILD_DIR/package.json" ".engines.iojs")
-  local npm_engine=$(read_json "$BUILD_DIR/package.json" ".engines.npm")
-  local yarn_engine=$(read_json "$BUILD_DIR/package.json" ".engines.yarn")
+  local node_engine=$(read_json "$BUILD_DIR/$NODEJS_APP_DIR/package.json" ".engines.node")
+  local iojs_engine=$(read_json "$BUILD_DIR/$NODEJS_APP_DIR/package.json" ".engines.iojs")
+  local npm_engine=$(read_json "$BUILD_DIR/$NODEJS_APP_DIR/package.json" ".engines.npm")
+  local yarn_engine=$(read_json "$BUILD_DIR/$NODEJS_APP_DIR/package.json" ".engines.yarn")
 
   if [ -n "$iojs_engine" ]; then
-    echo "engines.iojs (package.json):  $iojs_engine (iojs)"
+    echo "engines.iojs ($NODEJS_APP_DIR/package.json):  $iojs_engine (iojs)"
   else
-    echo "engines.node (package.json):  ${node_engine:-unspecified}"
+    echo "engines.node ($NODEJS_APP_DIR/package.json):  ${node_engine:-unspecified}"
   fi
-  echo "engines.npm (package.json):   ${npm_engine:-unspecified (use default)}"
+  echo "engines.npm ($NODEJS_APP_DIR/package.json):   ${npm_engine:-unspecified (use default)}"
   if $YARN; then
-    echo "engines.yarn (package.json):  ${yarn_engine:-unspecified (use default)}"
+    echo "engines.yarn ($NODEJS_APP_DIR/package.json):  ${yarn_engine:-unspecified (use default)}"
   fi
   echo ""
 
@@ -153,7 +154,7 @@ restore_cache() {
       echo "Loading 2 from cacheDirectories (default):"
       restore_cache_directories "$BUILD_DIR" "$CACHE_DIR" "$DEFAULT_CACHE"
     else
-      echo "Loading $(echo $cache_directories | wc -w | xargs) from cacheDirectories (package.json):"
+      echo "Loading $(echo $cache_directories | wc -w | xargs) from cacheDirectories ($NODEJS_APP_DIR/package.json):"
       restore_cache_directories "$BUILD_DIR" "$CACHE_DIR" $cache_directories
     fi
   else
@@ -202,7 +203,7 @@ cache_build() {
     echo "Saving 2 cacheDirectories (default):"
     save_cache_directories "$BUILD_DIR" "$CACHE_DIR" "$DEFAULT_CACHE"
   else
-    echo "Saving $(echo $cache_directories | wc -w | xargs) cacheDirectories (package.json):"
+    echo "Saving $(echo $cache_directories | wc -w | xargs) cacheDirectories ($NODEJS_APP_DIR/package.json):"
     save_cache_directories "$BUILD_DIR" "$CACHE_DIR" $cache_directories
   fi
   save_signature
