@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # bin/detect <build-dir>
 
-if [ -f $1/package.json ]; then
+NODEJS_APP_DIR="$(cat "$3/NODEJS_APP_DIR")"
+if [ -f $1/$NODEJS_APP_DIR/package.json ]; then
   echo 'Node.js'
   exit 0
 fi
