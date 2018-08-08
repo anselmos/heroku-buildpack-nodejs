@@ -62,6 +62,7 @@ header "Check initial state"
 [ -e "$BUILD_DIR/node_modules" ] && PREBUILD=true || PREBUILD=false
 [ -f "$BUILD_DIR/yarn.lock" ] && YARN=true || YARN=false
 [ -f "$BUILD_DIR/package-lock.json" ] && NPM_LOCK=true || NPM_LOCK=false
+header "Check complete"
 
 ### Failures that should be caught immediately
 
@@ -73,6 +74,7 @@ warn_prebuilt_modules "$BUILD_DIR"
 warn_missing_package_json "$BUILD_DIR"
 
 ### Compile
+header "Compile"
 
 create_env() {
   write_profile "$BP_DIR" "$BUILD_DIR"
