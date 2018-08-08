@@ -68,10 +68,10 @@ header "Check complete"
 
 fail_dot_heroku "$BUILD_DIR"
 fail_dot_heroku_node "$BUILD_DIR"
-fail_invalid_package_json "$BUILD_DIR"
+fail_invalid_package_json "$BUILD_DIR/$NODEJS_APP_DIR"
 fail_multiple_lockfiles "$BUILD_DIR"
 warn_prebuilt_modules "$BUILD_DIR"
-warn_missing_package_json "$BUILD_DIR"
+warn_missing_package_json "$BUILD_DIR/$NODEJS_APP_DIR"
 
 ### Compile
 header "Compile"
