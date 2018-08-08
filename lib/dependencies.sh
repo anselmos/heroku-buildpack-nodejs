@@ -17,7 +17,8 @@ list_dependencies() {
 
 run_if_present() {
   local script_name=${1:-}
-  local has_script=$(read_json "$BUILD_DIR/package.json" ".scripts[\"$script_name\"]")
+  local NODEJS_APP_DIR="$(cat "${3:-}/NODEJS_APP_DIR")"
+  local has_script=$(read_json "$BUILD_DIR/$NODEJS_APP_DIR/package.json" ".scripts[\"$script_name\"]")
   if [ -n "$has_script" ]; then
     if $YARN; then
       echo "Running $script_name (yarn)"
@@ -30,10 +31,11 @@ run_if_present() {
 }
 
 log_build_scripts() {
-  local build=$(read_json "$BUILD_DIR/package.json" ".scripts[\"build\"]")
-  local heroku_prebuild=$(read_json "$BUILD_DIR/package.json" ".scripts[\"heroku-prebuild\"]")
-  local heroku_postbuild=$(read_json "$BUILD_DIR/package.json" ".scripts[\"heroku-postbuild\"]")
-  local postinstall=$(read_json "$BUILD_DIR/package.json" ".scripts[\"heroku-postbuild\"]")
+  local NODEJS_APP_DIR="$(cat "${3:-}/NODEJS_APP_DIR")"
+  local build=$(read_json "$BUILD_DIR/$NODEJS_APP_DIR/package.json" ".scripts[\"build\"]")
+  local heroku_prebuild=$(read_json "$BUILD_DIR/$NODEJS_APP_DIR/package.json" ".scripts[\"heroku-prebuild\"]")
+  local heroku_postbuild=$(read_json "$BUILD_DIR/$NODEJS_APP_DIR/package.json" ".scripts[\"heroku-postbuild\"]")
+  local postinstall=$(read_json "$BUILD_DIR/$NODEJS_APP_DIR/package.json" ".scripts[\"heroku-postbuild\"]")
 
   if [ -n "$build" ]; then
     mcount "scripts.build"
@@ -116,12 +118,13 @@ yarn_prune_devdependencies() {
 
 npm_node_modules() {
   local build_dir=${1:-}
+  local NODEJS_APP_DIR="$(cat "${3:-}/NODEJS_APP_DIR")"
   local production=${NPM_CONFIG_PRODUCTION:-false}
 
-  if [ -e $build_dir/package.json ]; then
+  if [ -e $build_dir/$NODEJS_APP_DIR/package.json ]; then
     cd $build_dir
 
-    if [ -e $build_dir/package-lock.json ]; then
+    if [ -e $build_dir/$NODEJS_APP_DIR/package-lock.json ]; then
       echo "Installing node modules (package.json + package-lock)"
     elif [ -e $build_dir/npm-shrinkwrap.json ]; then
       echo "Installing node modules (package.json + shrinkwrap)"
@@ -137,8 +140,9 @@ npm_node_modules() {
 npm_rebuild() {
   local build_dir=${1:-}
   local production=${NPM_CONFIG_PRODUCTION:-false}
+  local NODEJS_APP_DIR="$(cat "${3:-}/NODEJS_APP_DIR")"
 
-  if [ -e $build_dir/package.json ]; then
+  if [ -e $build_dir/$NODEJS_APP_DIR/package.json ]; then
     cd $build_dir
     echo "Rebuilding any native modules"
     npm rebuild 2>&1
