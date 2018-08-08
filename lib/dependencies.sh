@@ -119,7 +119,7 @@ npm_node_modules() {
   local production=${NPM_CONFIG_PRODUCTION:-false}
 
   if [ -e $build_dir/$NODEJS_APP_DIR/package.json ]; then
-    cd $build_dir
+    cd $build_dir/$NODEJS_APP_DIR
 
     if [ -e $build_dir/$NODEJS_APP_DIR/package-lock.json ]; then
       echo "Installing node modules (package.json + package-lock)"
@@ -139,7 +139,7 @@ npm_rebuild() {
   local production=${NPM_CONFIG_PRODUCTION:-false}
 
   if [ -e $build_dir/$NODEJS_APP_DIR/package.json ]; then
-    cd $build_dir
+    cd $build_dir/$NODEJS_APP_DIR
     echo "Rebuilding any native modules"
     npm rebuild 2>&1
     if [ -e $build_dir/npm-shrinkwrap.json ]; then
